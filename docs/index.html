@@ -68,8 +68,8 @@ var delayCreateScene = function () {
     var adt = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("interface", true)
 
     var mainbox = new BABYLON.GUI.Rectangle();
-    mainbox.height = "30%";  // 20%
-    mainbox.width = "40%";
+    mainbox.height = "600px";  // 20%
+    mainbox.width = "800px";
     mainbox.paddingRight = "2px";
     mainbox.cornerRadius = 4;
     mainbox.color = "gray";
@@ -158,9 +158,9 @@ var delayCreateScene = function () {
     var images = [];
 
     for (let i=0;i<21;i++) {
-        images[i] = new BABYLON.GUI.Image("image"+i, "assets/images/frame_"+ (i+1) +".png");
-        images[i].width = "600px";
-        images[i].height = "500px";
+        images[i] = new BABYLON.GUI.Image("image"+i, "/images/frame_"+ (i+1) +".png");
+        images[i].width = "800px";
+        images[i].height = "600px";
         images[i].stretch = BABYLON.GUI.Image.STRETCH_UNIFORM;
         images[i].verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         images[i].horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -241,7 +241,7 @@ var delayCreateScene = function () {
     // );
 
     // Append glTF model to scene.
-    var loader = BABYLON.SceneLoader.ImportMesh("", "assets/models/tube/", "tube_3.obj", scene, function (meshes) {
+    var loader = BABYLON.SceneLoader.ImportMesh("", "/models/tube/", "tube_3.obj", scene, function (meshes) {
         // Create a default arc rotate camera and light.
         scene.createDefaultCameraOrLight(true, true, true);
 
@@ -254,7 +254,7 @@ var delayCreateScene = function () {
 
     for(let i=0; i < 16; i++) {
         var loader = BABYLON.SceneLoader.ImportMesh(
-            "", "assets/models/defects/", "test_" + i + ".obj", scene, 
+            "", "/models/defects/", "test_" + i + ".obj", scene, 
             function (meshes) {
                 prepareOverOut(meshes[0], getOverFunc(i), getExitFunc(i));
         });
