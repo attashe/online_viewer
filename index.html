@@ -158,7 +158,7 @@ var delayCreateScene = function () {
     var images = [];
 
     for (let i=0;i<21;i++) {
-        images[i] = new BABYLON.GUI.Image("image"+i, "/images/frame_"+ (i+1) +".png");
+        images[i] = new BABYLON.GUI.Image("image"+i, "{{ baseurl }}/images/frame_"+ (i+1) +".png");
         images[i].width = "600px";
         images[i].height = "500px";
         images[i].stretch = BABYLON.GUI.Image.STRETCH_UNIFORM;
@@ -241,7 +241,7 @@ var delayCreateScene = function () {
     // );
 
     // Append glTF model to scene.
-    var loader = BABYLON.SceneLoader.ImportMesh("", "/models/tube/", "tube_3.obj", scene, function (meshes) {
+    var loader = BABYLON.SceneLoader.ImportMesh("", "{{ baseurl }}/models/tube/", "tube_3.obj", scene, function (meshes) {
         // Create a default arc rotate camera and light.
         scene.createDefaultCameraOrLight(true, true, true);
 
@@ -254,7 +254,7 @@ var delayCreateScene = function () {
 
     for(let i=0; i < 16; i++) {
         var loader = BABYLON.SceneLoader.ImportMesh(
-            "", "/models/defects/", "test_" + i + ".obj", scene, 
+            "", "{{ baseurl }}/models/defects/", "test_" + i + ".obj", scene, 
             function (meshes) {
                 prepareOverOut(meshes[0], getOverFunc(i), getExitFunc(i));
         });
