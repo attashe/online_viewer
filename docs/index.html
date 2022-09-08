@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://preview.babylonjs.com/ammo.js"></script>
+        <script src="https://preview.babylonjs.com/cannon.js"></script>
+        <script src="https://preview.babylonjs.com/Oimo.js"></script>
+        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+<script>
+var canvas = document.getElementById("renderCanvas");
+
+var startRenderLoop = function (engine, canvas) {
+    engine.runRenderLoop(function () {
+        if (sceneToRender && sceneToRender.activeCamera) {
+            sceneToRender.render();
+        }
+    });
+}
+
+var engine = null;
+var scene = null;
+var sceneToRender = null;
+var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+var delayCreateScene = function () {
+    // Create a scene.
+    var scene = new BABYLON.Scene(engine);
+
+    // Create a default skybox with an environment.
+    // var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("textures/environment.dds", scene);
+    // var currentSkybox = scene.createDefaultSkybox(hdrTexture, true);
+
+    // ----------- Create a control panel -----------
+    // Activate full-screen 2d GUI  
+
+    var adt = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("interface", true)
+
+    var mainbox = new BABYLON.GUI.Rectangle();
+    mainbox.height = "30%";  // 20%
+    mainbox.width = "40%";
+    mainbox.paddingRight = "2px";
+    mainbox.cornerRadius = 4;
+    mainbox.color = "gray";
+    mainbox.thickness = 0;
+    mainbox.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    // mainbox.background = "#221100";
+    adt.addControl(mainbox);
+    mainbox.isVisible = false;
+    // console.log(mainbox);
+
+    var header = new BABYLON.GUI.Rectangle();
+    header.height = "20px";
+    header.width = "96%";
+    // header.top = "-43%";
+    header.left = "0%";
+    header.cornerRadius = 4;
+    header.color = "gray";
+    header.thickness = 1;
+    header.background = "#221100";
+    header.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    // mainbox.addControl(header);
+    // console.log(header);
+
+    // var headertext = new BABYLON.GUI.TextBlock();
+    // headertext.text = "Select an option";
+    // headertext.color = "white";
+    // headertext.fontSize = 12;
+    // headertext.textWrapping = true;
+    // header.addControl(headertext);
+
+
+    var contentrect = new BABYLON.GUI.Rectangle();
+    contentrect.height = "80%";
+    contentrect.width = "95%";
+    // contentrect.top = "7%";
+    // contentrect.left = "0%";
+    contentrect.cornerRadius = 4;
+    contentrect.color = "gray";
+    contentrect.thickness = 1;
+    // footer.background = "#221100";
+    mainbox.addControl(contentrect);
+    contentrect.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+
+    var contentpanel = new BABYLON.GUI.StackPanel("contentpanel");
+    contentpanel.isVertical = true;
+    // contentpanel.height = "99%";
+    // contentpanel.width = "95%";
+    // contentpanel.top = "0%";
+    contentrect.addControl(contentpanel);
+
+
+    // var rectheight = "11%";
+    // var rectwidth = "99%";
+
+    // ----------- Add buttons -----------
+    // var buttheight = "20px";
+    // var buttwidth = "97%";
+    // var but1rect;
+    // var butt1;
+    // var labels = ["b0", "b1", "b2", "b3"];
+    // var buttons = [];
+    // var buttonrects = [];
+
+    // for (var i=0;i<4;i++) {
+    //     butt1 = BABYLON.GUI.Button.CreateSimpleButton("butt"+i, "");
+    //     butt1._children[0].text = labels[i];
+    //     butt1.width = buttwidth;
+    //     butt1.height = buttheight;
+    //     butt1.fontSize = 12;
+    //     butt1.fontStyle = "bold";
+    //     butt1.fontFamily = "Georgia";
+    //     butt1.background = "teal";
+    //     butt1.cornerRadius = 4;
+    //     butt1.paddingBottom = "2px";
+    //     // butt1.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    //     // but1rect.addControl(butt1);
+    //     buttons.push(butt1);
+    // }
+
+    // for (var i=0;i<4;i++) {
+    //     // buttonrects[i].addControl(buttons[i]);
+    //     contentpanel.addControl(buttons[i]);
+    // }
+    // ---------------------------------
+
+    var images = [];
+
+    for (let i=0;i<21;i++) {
+        images[i] = new BABYLON.GUI.Image("image"+i, "assets/images/frame_"+ (i+1) +".png");
+        images[i].width = "600px";
+        images[i].height = "500px";
+        images[i].stretch = BABYLON.GUI.Image.STRETCH_UNIFORM;
+        images[i].verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        images[i].horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        images[i].isVisible = false;
+        contentpanel.addControl(images[i]);
+    }
+    // var image = new BABYLON.GUI.Image("frame", );
+    // image.width = "300px";
+    // image.height = "250px";  
+    // contentpanel.addControl(image);
+
+
+// -----------------------------------------------------------------------------
+    //  action manager area
+
+    function getOverFunc(i) {
+        return function(bjsEvent) {
+                console.log(bjsEvent);
+                mainbox.isVisible = true;
+                mainbox.linkWithMesh(bjsEvent.meshUnderPointer);
+                mainbox.linkOffsetY = -80;
+                // headertext.text = mainbox.linkedMesh.name + " menu"
+                images[i].isVisible = true;
+            }
+    }
+
+    // var overMesh = function(bjsEvent) {
+    //     console.log(bjsEvent);
+    //     mainbox.isVisible = true;
+    //     mainbox.linkWithMesh(bjsEvent.meshUnderPointer);
+    //     mainbox.linkOffsetY = -80;
+    //     headertext.text = mainbox.linkedMesh.name + " menu"
+    // }
+
+    function getExitFunc(i) {
+        return function(bjsEvent) {
+                console.log(bjsEvent);
+                mainbox.isVisible = false;
+                mainbox.linkWithMesh(null);
+                images[i].isVisible = false;
+            }
+    }
+
+    // var exitMesh = function(bjsEvent) {
+    //     console.log(bjsEvent);
+    //     mainbox.isVisible = false;
+    //     mainbox.linkWithMesh(null);
+    // }
+
+
+	var prepareOverOut = function (mesh, func_over, func_out) {
+    
+        mesh.actionManager = new BABYLON.ActionManager(scene);
+    	
+        mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                BABYLON.ActionManager.OnPointerOverTrigger, func_over
+            )
+        );
+		
+        mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                BABYLON.ActionManager.OnPointerOutTrigger, func_out
+            )
+        );
+    }
+
+    // // click on ground to hide mesh-menu.
+    // mainStage.actionManager = new BABYLON.ActionManager(scene);
+    
+    // mainStage.actionManager.registerAction(
+    //     new BABYLON.ExecuteCodeAction(
+    //         BABYLON.ActionManager.OnPickDownTrigger, function() {
+    //             mainbox.isVisible = false;
+    //             mainbox.linkWithMesh(null);
+    //         }
+    //     )
+    // );
+
+    // Append glTF model to scene.
+    var loader = BABYLON.SceneLoader.ImportMesh("", "assets/models/tube/", "tube_3.obj", scene, function (meshes) {
+        // Create a default arc rotate camera and light.
+        scene.createDefaultCameraOrLight(true, true, true);
+
+        // The default camera looks at the back of the asset.
+        // Rotate the camera by 180 degrees to the front of the asset.
+        scene.activeCamera.alpha += Math.PI;
+
+        // prepareOverOut(meshes[0]);
+    });
+
+    for(let i=0; i < 16; i++) {
+        var loader = BABYLON.SceneLoader.ImportMesh(
+            "", "assets/models/defects/", "test_" + i + ".obj", scene, 
+            function (meshes) {
+                prepareOverOut(meshes[0], getOverFunc(i), getExitFunc(i));
+        });
+    }
+
+    return scene;
+};
+        window.initFunction = async function() {
+            
+            
+            var asyncEngineCreation = async function() {
+                try {
+                return createDefaultEngine();
+                } catch(e) {
+                console.log("the available createEngine function failed. Creating the default engine instead");
+                return createDefaultEngine();
+                }
+            }
+
+            window.engine = await asyncEngineCreation();
+if (!engine) throw 'engine should not be null.';
+startRenderLoop(engine, canvas);
+window.scene = delayCreateScene();};
+initFunction().then(() => {sceneToRender = scene                    
+});
+
+// Resize
+window.addEventListener("resize", function () {
+    engine.resize();
+});
+</script>
+</body>
+</html>
