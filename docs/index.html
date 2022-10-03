@@ -159,8 +159,8 @@ var ScatterPlot = function (dimensions, labels, scene) {
 
     this._BBJSaddLabel = function(text){
 
-        const planeTexture = new BABYLON.DynamicTexture("dynamic texture", 512, this.scene, true, BABYLON.DynamicTexture.TRILINEAR_SAMPLINGMODE);
-        planeTexture.drawText(text, null, null, "normal 24px Helvetica", "black", "transparent", true);
+        const planeTexture = new BABYLON.DynamicTexture("dynamic texture", 256, this.scene, true, BABYLON.DynamicTexture.TRILINEAR_SAMPLINGMODE);
+        planeTexture.drawText(text, null, null, "normal 42pt Helvetica", "black", "transparent", true);
 
         var material = new BABYLON.StandardMaterial("outputplane", this.scene);
         material.emissiveTexture = planeTexture;
@@ -169,7 +169,7 @@ var ScatterPlot = function (dimensions, labels, scene) {
         material.disableLighting = true;
         material.freeze();
         
-        var outputplane = BABYLON.Mesh.CreatePlane("outputplane", 10, this.scene, false);
+        var outputplane = BABYLON.Mesh.CreatePlane("outputplane", 1, this.scene, false);
         outputplane.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
         outputplane.material = material;
 
@@ -349,10 +349,12 @@ var ScatterPlot = function (dimensions, labels, scene) {
     }
 
     //create items
-	this._addGrid([0, this._height], [0, this._height], this._b, this._a, new BABYLON.Vector3(0,0,0), BABYLON.Vector3.Zero());
-    this._addGrid([0, this._depth], [0, this._height], this._b, this._c, new BABYLON.Vector3(0,0,0), new BABYLON.Vector3(Math.PI/2,0,0));
-    this._addGrid([0, this._height], [0, this._depth], this._c, this._a, new BABYLON.Vector3(0,0,0), new BABYLON.Vector3(0,-Math.PI/2,0));				
+	// this._addGrid([0, this._height], [0, this._height], this._b, this._a, new BABYLON.Vector3(0,0,0), BABYLON.Vector3.Zero());
+    // this._addGrid([0, this._depth], [0, this._height], this._b, this._c, new BABYLON.Vector3(0,0,0), new BABYLON.Vector3(Math.PI/2,0,0));
+    // this._addGrid([0, this._height], [0, this._depth], this._c, this._a, new BABYLON.Vector3(0,0,0), new BABYLON.Vector3(0,-Math.PI/2,0));			
     
+    this._addGrid([0, this._depth], [-this._height/2, this._height/2], this._b, this._c, new BABYLON.Vector3(0,0,0), new BABYLON.Vector3(Math.PI/2,0,0));
+
     // this._addLabel(this._width, this.labelsInfo.x, "x", new BABYLON.Vector3(this._width,-(this._height+2),-this._depth));
     // this._addLabel(this._height, this.labelsInfo.y, "y", new BABYLON.Vector3(this._width,-this._height,-(this._depth+4)));
     // this._addLabel(this._depth, this.labelsInfo.z, "z", new BABYLON.Vector3(this._width+2,-(this._height+2),this._depth));
@@ -365,7 +367,8 @@ var ScatterPlot = function (dimensions, labels, scene) {
 }
 </script>
 <script>
-var basefolder = "assets"
+// var basefolder = ""
+var basefolder = "assets";
 var canvas = document.getElementById("renderCanvas");
 
 var startRenderLoop = function (engine, canvas) {
@@ -386,12 +389,19 @@ var delayCreateScene = function () {
 
     // Create a default arc rotate camera and light.
     scene.createDefaultCameraOrLight(true, true, true);
-    
-    // Add a axis to the scene.
-    new BABYLON.AxesViewer(scene, 1);
 
     // Add 3D-Grid to scene
     let W = 10, H = 10, D = 100;
+
+    init_zs = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100'];
+
+    start_z = 0;
+    end_z = 72.8472 / 0.3048;
+
+    rescale_zs = [];
+    for (var i = 0; i < init_zs.length; i++) {
+        rescale_zs.push(((parseFloat(init_zs[i]) - start_z) / (end_z - start_z) * D).toFixed(1));
+    }
 
     scatterPlot = new ScatterPlot([W,H,D],{
         x: [2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006],
@@ -417,6 +427,22 @@ var delayCreateScene = function () {
     text1.fontSize = 24;
     text1.fontFamily = "Montserrat";
     advancedTexture.addControl(text1);  
+
+    // ----------- Create a text panel with distance ------------
+    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+    var text2 = new BABYLON.GUI.TextBlock();
+    text2.text = "0.00";
+    text2.color = "white";
+    text2.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    text2.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+    text2.fontSize = 24;
+    text2.fontFamily = "Montserrat";
+    advancedTexture.addControl(text2);  
+
+    function updateDistanceText(distance) {
+        text2.text = distance.toFixed(2);
+    }
 
     // ----------- Create a control panel -----------
     // Activate full-screen 2d GUI  
@@ -675,6 +701,12 @@ var delayCreateScene = function () {
     redSphere.position.y = 0;
     redSphere.position.x = 0;
 
+    // Add a axis to the scene.
+    const axes = new BABYLON.AxesViewer(scene, 0.6);
+    axes.xAxis.parent = redSphere;
+    axes.yAxis.parent = redSphere;
+    axes.zAxis.parent = redSphere;
+
     scene.activeCamera.target = redSphere;
     /*
     scene.onPointerObservable.add((pointerInfo) => {      		
@@ -720,6 +752,8 @@ var delayCreateScene = function () {
                 redSphere.position.z += diff * scale;
                 redSphere.position.z = Math.max(0, redSphere.position.z);
                 redSphere.position.z = Math.min(max_length, redSphere.position.z);
+
+                updateDistanceText(redSphere.position.z);
             }
             break;
         case BABYLON.PointerEventTypes.POINTERWHEEL:
@@ -738,8 +772,8 @@ var delayCreateScene = function () {
     });
 
     // Add text labels to the start and end of the tube.
-    var startLabel = BABYLON.MeshBuilder.CreatePlane("startLabel", {width: 5, height: 5}, scene);
-    startLabel.position = new BABYLON.Vector3(0, 3, 0);
+    var startLabel = BABYLON.MeshBuilder.CreatePlane("startLabel", {width: 3, height: 3}, scene);
+    startLabel.position = new BABYLON.Vector3(0, 2, 0);
     startLabel.rotation = new BABYLON.Vector3(0, -3.14 / 2, 0);
     startLabel.material = new BABYLON.StandardMaterial("startLabel", scene);
     startLabel.material.diffuseTexture = new BABYLON.Texture(basefolder + "/images/start.png", scene);
@@ -756,15 +790,15 @@ var delayCreateScene = function () {
     text1.width = 1;
     text1.height = 1;
     text1.color = "black";
-    text1.fontSize = 48;
+    text1.fontSize = 54;
     // text1.fontWeight = "bold";
     text1.fontFamily = "Montserrat";
     text1.textWrapping = true;
     textADT.addControl(text1);
 
     // Add text labels to the start and end of the tube.
-    var startLabel = BABYLON.MeshBuilder.CreatePlane("startLabel", {width: 5, height: 5}, scene);
-    startLabel.position = new BABYLON.Vector3(0, 3, max_length);
+    var startLabel = BABYLON.MeshBuilder.CreatePlane("startLabel", {width: 3, height: 3}, scene);
+    startLabel.position = new BABYLON.Vector3(0, 2, max_length);
     startLabel.rotation = new BABYLON.Vector3(0, -3.14 / 2, 0);
     startLabel.material = new BABYLON.StandardMaterial("startLabel", scene);
     startLabel.material.diffuseTexture = new BABYLON.Texture(basefolder + "/images/start.png", scene);
@@ -781,7 +815,7 @@ var delayCreateScene = function () {
     text1.width = 1;
     text1.height = 1;
     text1.color = "black";
-    text1.fontSize = 48;
+    text1.fontSize = 54;
     // text1.fontWeight = "bold";
     text1.fontFamily = "Montserrat";
     text1.textWrapping = true;
@@ -815,3 +849,20 @@ window.addEventListener("resize", function () {
 </script>
 </body>
 </html>
+
+
+# Build a GUI docs
+https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#how-to-use-babylon-gui
+
+Strange axis + animation
+https://www.babylonjs-playground.com/#1UFGZH#12
+
+Grid for plots
+https://forum.babylonjs.com/t/help-with-3d-charts-points-grid-painting-its-bottom-shadders/21573
+https://www.babylonjs-playground.com/#E3XJMU#99
+
+Drag and drop with mouse
+https://www.babylonjs-playground.com/#7CBW04#414
+
+Mouse interac
+https://doc.babylonjs.com/features/featuresDeepDive/scene/interactWithScenes#pointer-interactions
