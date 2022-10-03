@@ -391,7 +391,7 @@ var delayCreateScene = function () {
     scene.createDefaultCameraOrLight(true, true, true);
 
     // Add 3D-Grid to scene
-    let W = 10, H = 10, D = 100;
+    let W = 10, H = 10, D = 55;
 
     init_zs = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100'];
 
@@ -399,14 +399,15 @@ var delayCreateScene = function () {
     end_z = 72.8472 / 0.3048;
 
     rescale_zs = [];
+    last_z = 105;
     for (var i = 0; i < init_zs.length; i++) {
-        rescale_zs.push(((parseFloat(init_zs[i]) - start_z) / (end_z - start_z) * D).toFixed(1));
+        rescale_zs.push((parseFloat(init_zs[i]) / last_z * (end_z - start_z) + start_z).toFixed(1));
     }
 
     scatterPlot = new ScatterPlot([W,H,D],{
         x: [2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006],
         y: ["", "25°", "26°", "27°", "28°", "29°", "30°", "31°", "32°", "33°", "34°", "35°", "36°", "37°", "38°", "39°", "40°"],
-        z: ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100'],  
+        z: rescale_zs,  
     }, scene);
 
     scene.clearColor = new BABYLON.Color3(120/255, 120/255, 165/255);
@@ -441,6 +442,8 @@ var delayCreateScene = function () {
     advancedTexture.addControl(text2);  
 
     function updateDistanceText(distance) {
+        // rescale distance
+        distance = distance / D * (end_z - start_z) + start_z;
         text2.text = distance.toFixed(2);
     }
 
@@ -727,7 +730,7 @@ var delayCreateScene = function () {
         }
     });
     */
-    var max_length = 53;
+    var max_length = D;
     var prevPos = 0;
     scale = 0.001;
     scene.onPointerObservable.add((pointerInfo) => {
