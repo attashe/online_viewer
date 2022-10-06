@@ -423,6 +423,8 @@ var delayCreateScene = function () {
     var text1 = new BABYLON.GUI.TextBlock();
     text1.text = "Woolwich Township, NJ\nMaterial: PS46-PVC\n18\" Gravity pipeline\nMH1-MH2\nJuly 15, 2022";
     text1.color = "white";
+    text1.paddingTop = "5px";
+    text1.paddingLeft = "10px";
     text1.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     text1.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
     text1.fontSize = 24;
@@ -433,8 +435,12 @@ var delayCreateScene = function () {
     var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
     var text2 = new BABYLON.GUI.TextBlock();
-    text2.text = "0.00";
+    var text_prefix = "Distance: ";
+    var text_suffix = " ft";
+    text2.text = text_prefix + "0.00" + text_suffix;
     text2.color = "white";
+    text2.paddingBottom = "5px";
+    text2.paddingLeft = "10px";
     text2.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     text2.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
     text2.fontSize = 24;
@@ -444,7 +450,7 @@ var delayCreateScene = function () {
     function updateDistanceText(distance) {
         // rescale distance
         distance = distance / D * (end_z - start_z) + start_z;
-        text2.text = distance.toFixed(2);
+        text2.text = text_prefix + distance.toFixed(2) + text_suffix;
     }
 
     // ----------- Create a control panel -----------
@@ -731,48 +737,56 @@ var delayCreateScene = function () {
     });
     */
     var max_length = D;
-    var prevPos = 0;
+    var prevPos = new BABYLON.Vector2(0, 0);
     scale = 0.001;
     scene.onPointerObservable.add((pointerInfo) => {
-    if (pointerInfo.event.button == 0) {
-        return scene;
-    }
-    pos = pointerInfo.event.clientX;
-    switch (pointerInfo.type) {
-        case BABYLON.PointerEventTypes.POINTERDOWN:
-            console.log("POINTER DOWN");
-            console.log(pointerInfo);
-            prevPos = pos;
-            break;
-        case BABYLON.PointerEventTypes.POINTERUP:
-            console.log("POINTER UP");
-            prevPos = 0;
-            break;
-        case BABYLON.PointerEventTypes.POINTERMOVE:
-            console.log("POINTER MOVE");
-            if (prevPos != 0) {
-                diff = pos - prevPos;
-                redSphere.position.z += diff * scale;
-                redSphere.position.z = Math.max(0, redSphere.position.z);
-                redSphere.position.z = Math.min(max_length, redSphere.position.z);
-
-                updateDistanceText(redSphere.position.z);
-            }
-            break;
-        case BABYLON.PointerEventTypes.POINTERWHEEL:
-            console.log("POINTER WHEEL");
-            break;
-        case BABYLON.PointerEventTypes.POINTERPICK:
-            console.log("POINTER PICK");
-            break;
-        case BABYLON.PointerEventTypes.POINTERTAP:
-            console.log("POINTER TAP");
-            break;
-        case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
-            console.log("POINTER DOUBLE-TAP");
-            break;
+        // console.log(scene.activeCamera.getDirection(BABYLON.Axis.Z));
+        direction = scene.activeCamera.getDirection(BABYLON.Axis.Z);
+        if (pointerInfo.event.button == 0) {
+            return scene;
         }
-    });
+        pos_x = pointerInfo.event.clientX;
+        pos_y = pointerInfo.event.clientY;
+        switch (pointerInfo.type) {
+            case BABYLON.PointerEventTypes.POINTERDOWN:
+                console.log("POINTER DOWN");
+                console.log(pointerInfo);
+                prevPos.x = pos_x;
+                prevPos.y = pos_y;
+                break;
+            case BABYLON.PointerEventTypes.POINTERUP:
+                console.log("POINTER UP");
+                prevPos.x = 0;
+                prevPos.y = 0;
+                break;
+            case BABYLON.PointerEventTypes.POINTERMOVE:
+                console.log("POINTER MOVE");
+                if (prevPos.x != 0 && prevPos.y != 0) {
+                    // diff = pos - prevPos;
+                    diff_x = pos_x - prevPos.x;
+                    diff_y = pos_y - prevPos.y;
+                    // TODO: make separate function for change of camera position
+                    redSphere.position.z += scale * (diff_x * direction.x + diff_y * direction.z);
+                    redSphere.position.z = Math.max(0, redSphere.position.z);
+                    redSphere.position.z = Math.min(max_length, redSphere.position.z);
+
+                    updateDistanceText(redSphere.position.z);
+                }
+                break;
+            case BABYLON.PointerEventTypes.POINTERWHEEL:
+                console.log("POINTER WHEEL");
+                break;
+            case BABYLON.PointerEventTypes.POINTERPICK:
+                console.log("POINTER PICK");
+                break;
+            case BABYLON.PointerEventTypes.POINTERTAP:
+                console.log("POINTER TAP");
+                break;
+            case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
+                console.log("POINTER DOUBLE-TAP");
+                break;
+            }
+        });
 
     // Add text labels to the start and end of the tube.
     var startLabel = BABYLON.MeshBuilder.CreatePlane("startLabel", {width: 3, height: 3}, scene);
@@ -823,6 +837,67 @@ var delayCreateScene = function () {
     text1.fontFamily = "Montserrat";
     text1.textWrapping = true;
     textADT.addControl(text1);
+
+    defects = {
+        0: { "name": "stones", rank: 2, "color": "yellow", position: 5 },
+        1: { "name": "cracks", rank: 1, "color": "red", position: 15 },
+        2: { "name": "mud", rank: 2, "color": "yellow", position: 20 },
+        3: { "name": "mud", rank: 2, "color": "yellow", position: 25 },
+        4: { "name": "clay", rank: 2, "color": "yellow", position: 30 },
+        5: { "name": "unknown", rank: 1, "color": "red", position: 35 },
+        // 2: { "name": "holes", rank: 3, "color": "orange" },
+        
+    };
+
+    // Create panel with buttons for each defects in scrollview
+    var panel = new BABYLON.GUI.StackPanel();
+    // panel.width = "200px";
+    panel.fontSize = "14px";
+    panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    // panel.top = "10px";
+    // panel.left = "10px";
+    panel.isVertical = true;
+    // panel.background = "white";
+    // panel.alpha = 0.5;
+    panel.cornerRadius = 20;
+
+    var scrollview = new BABYLON.GUI.ScrollViewer();
+    scrollview.width = "300px";
+    scrollview.height = "500px";
+    scrollview.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    scrollview.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    scrollview.thickness = 3;
+    scrollview.isVertical = true;
+    // scrollview.background = "white";
+    scrollview.alpha = 0.8;
+    scrollview.cornerRadius = 20;
+    scrollview.color = "gray";
+    scrollview.addControl(panel);
+
+    var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    textADT.addControl(scrollview);
+
+    for (var i = 0; i < Object.keys(defects).length; i++) {
+        var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defects[i].name);
+        button.width = "180px";
+        button.height = "40px";
+        button.color = "black";
+        button.cornerRadius = 20;
+        button.background = defects[i].color;
+        // button.alpha = 1.0;
+        let position = defects[i].position;
+        button.onPointerClickObservable.add(function() {
+            console.log("clicked");
+            // TODO: make separate function for change of camera position
+            redSphere.position.z = position;
+            redSphere.position.z = Math.max(0, redSphere.position.z);
+            redSphere.position.z = Math.min(max_length, redSphere.position.z);
+
+            updateDistanceText(redSphere.position.z);
+        });
+        panel.addControl(button);
+    }
     
     return scene;
 };
