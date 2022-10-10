@@ -2,6 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta charset=utf-8>
 
         <title>Babylon.js sample code</title>
 
@@ -545,7 +546,7 @@ var delayCreateScene = function () {
 
     var images = [];
 
-    for (let i=0;i<21;i++) {
+    for (let i=0;i<16;i++) {
         images[i] = new BABYLON.GUI.Image("image"+i, basefolder + "/images/frame_"+ (i+1) +".png");
         images[i].width = "800px";
         images[i].height = "600px";
@@ -793,8 +794,8 @@ var delayCreateScene = function () {
     startLabel.position = new BABYLON.Vector3(0, 2, 0);
     startLabel.rotation = new BABYLON.Vector3(0, -3.14 / 2, 0);
     startLabel.material = new BABYLON.StandardMaterial("startLabel", scene);
-    startLabel.material.diffuseTexture = new BABYLON.Texture(basefolder + "/images/start.png", scene);
-    startLabel.material.diffuseTexture.hasAlpha = true;
+    // startLabel.material.diffuseTexture = new BABYLON.Texture(basefolder + "/images/start.png", scene);
+    // startLabel.material.diffuseTexture.hasAlpha = true;
     startLabel.material.backFaceCulling = false;
 
     var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(startLabel, 256, 256);
@@ -818,8 +819,8 @@ var delayCreateScene = function () {
     startLabel.position = new BABYLON.Vector3(0, 2, max_length);
     startLabel.rotation = new BABYLON.Vector3(0, -3.14 / 2, 0);
     startLabel.material = new BABYLON.StandardMaterial("startLabel", scene);
-    startLabel.material.diffuseTexture = new BABYLON.Texture(basefolder + "/images/start.png", scene);
-    startLabel.material.diffuseTexture.hasAlpha = true;
+    // startLabel.material.diffuseTexture = new BABYLON.Texture(basefolder + "/images/start.png", scene);
+    // startLabel.material.diffuseTexture.hasAlpha = true;
     startLabel.material.backFaceCulling = false;
 
     var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(startLabel, 256, 256);
@@ -849,6 +850,298 @@ var delayCreateScene = function () {
         
     };
 
+    defects_standart = {
+        0: { 
+            "distance": 10.9, 
+            "video ref": "006:34", 
+            "code": "DSGV",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "",
+            "circumferential": {"at/from": "6", "to": "7",},
+            "image ref.": 1,
+            "remark": "Пятно",
+        },
+        1: { 
+            "distance": 12.0, 
+            "video ref": "009:50", 
+            "code": "DSGV",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "",
+            "circumferential": {"at/from": "6", "to": "7",},
+            "image ref.": 2,
+            "remark": "Пятно",
+        },
+        2: { 
+            "distance": 13.0, 
+            "video ref": "009:55", 
+            "code": "DSGV",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "",
+            "circumferential": {"at/from": "6", "to": "",},
+            "image ref.": 3,
+            "remark": "Пятно",
+        },
+        3: { 
+            "distance": 14.1, 
+            "video ref": "010:01", 
+            "code": "DSGV",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "",
+            "circumferential": {"at/from": "6", "to": "",},
+            "image ref.": 4,
+            "remark": "Пятно",
+        },
+        4: { 
+            "distance": 16.2, 
+            "video ref": "010:33", 
+            "code": "DSGV",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "",
+            "circumferential": {"at/from": 6, "to": "",},
+            "image ref.": 5,
+            "remark": "Пятно",
+        },
+        5: { 
+            "distance": 32.8, 
+            "video ref": "012:38", 
+            "code": "DSGV",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "",
+            "circumferential": {"at/from": 6, "to": "",},
+            "image ref.": 6,
+            "remark": "Пятно",
+        },
+        6: { 
+            "distance": 45.0, 
+            "video ref": "013:44", 
+            "code": "DSGV",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "",
+            "circumferential": {"at/from": 6, "to": "",},
+            "image ref.": 7,
+            "remark": "Пятно",
+        },
+        7: { 
+            "distance": 94.9, 
+            "video ref": "021:33", 
+            "code": "CL",
+            "color": "red",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "1.2", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 8, "to": "",},
+            "image ref.": 8,
+            "remark": "Продольный",
+        },
+        8: { 
+            "distance": 96.6, 
+            "video ref": "021:42", 
+            "code": "FL",
+            "color": "red",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "0.2", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 2, "to": "",},
+            "image ref.": 9,
+            "remark": "Продольный",
+        },
+        9: { 
+            "distance": 96.6, 
+            "video ref": "021:42", 
+            "code": "RFB",
+            "color": "orange",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 2, "to": "",},
+            "image ref.": 10,
+            "remark": "Пятно",
+        },
+        10: { 
+            "distance": 96.6, 
+            "video ref": "021:42", 
+            "code": "DAZ",
+            "color": "red",
+            "continuous": "S01",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 2, "to": "",},
+            "image ref.": "",
+            "remark": "Начало длинного продольного дефекта, начинается от 96.6 ft., заканчивается на 104.4 ft.",
+        },
+        11: { 
+            "distance": 98.9, 
+            "video ref": "021:54", 
+            "code": "RFB",
+            "color": "red",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 2, "to": "",},
+            "image ref.": 11,
+            "remark": "Пятно",
+        },
+        12: { 
+            "distance": 100.3, 
+            "video ref": "022:02", 
+            "code": "RFB",
+            "color": "red",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 2, "to": "",},
+            "image ref.": 12,
+            "remark": "Пятно",
+        },
+        13: { 
+            "distance": 101.7, 
+            "video ref": "022:10", 
+            "code": "FC",
+            "color": "red",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "0.2", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 3, "to": 4,},
+            "image ref.": 13,
+            "remark": "Круговой дефект",
+        },
+        14: { 
+            "distance": 102.5, 
+            "video ref": "022:14", 
+            "code": "RFB",
+            "color": "red",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 2, "to": "",},
+            "image ref.": 14,
+            "remark": "Пятно",
+        },
+        15: { 
+            "distance": 104.4, 
+            "video ref": "022:24", 
+            "code": "DAZ",
+            "color": "orange",
+            "continuous": "F01",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "" },
+            "joint": "J",
+            "circumferential": {"at/from": 2, "to": "",},
+            "image ref.": "",
+            "remark": "Конец продольного дефекта, начинается от 96.6 ft., заканчивается на 104.4 ft.",
+        },
+        16: { 
+            "distance": 152.2, 
+            "video ref": "024:16", 
+            "code": "RFB",
+            "color": "red",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 2, "to": "",},
+            "image ref.": 15,
+            "remark": "Пятно",
+        },
+        17: { 
+            "distance": 131.8, 
+            "video ref": "024:52", 
+            "code": "DSGV",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "J",
+            "circumferential": {"at/from": 6, "to": "",},
+            "image ref.": 16,
+            "remark": "Пятно",
+        },
+        18: { 
+            "distance": 138.5, 
+            "video ref": "025:28", 
+            "code": "DSGV",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "",
+            "circumferential": {"at/from": 6, "to": "",},
+            "image ref.": 17,
+            "remark": "Пятно",
+        },
+        19: { 
+            "distance": 179.8, 
+            "video ref": "029:09", 
+            "code": "DAZ",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "",
+            "circumferential": {"at/from": 9, "to": "",},
+            "image ref.": 18,
+            "remark": "Пятно",
+        },
+        20: { 
+            "distance": 218.3, 
+            "video ref": "032:37",
+            "code": "CS",
+            "color": "red",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "0.8", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 3, "to": "",},
+            "image ref.": 19,
+            "remark": "Спиралевидный дефект",
+        },
+        21: { 
+            "distance": 218.9, 
+            "video ref": "032:40", 
+            "code": "FS",
+            "color": "red",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "0.8", "2-nd": "", }, "%": "" },
+            "joint": "",
+            "circumferential": {"at/from": 3, "to": "",},
+            "image ref.": 20,
+            "remark": "Спиралевидный дефект",
+        },
+        22: { 
+            "distance": 233.5, 
+            "video ref": "033:59", 
+            "code": "DSZ",
+            "color": "yellow",
+            "continuous": "",
+            "value": { "dimension": { "1-st": "", "2-nd": "", }, "%": "5" },
+            "joint": "",
+            "circumferential": {"at/from": 6, "to": "",},
+            "image ref.": 21,
+            "remark": "Пятно",
+        },
+    }
+
+    model_length = 55
+    tube_length = 72.8472 / 0.3048;
+
+    function unit2feeet(unit) {
+        var feet = unit * tube_length / model_length;
+        return feet;
+    }
+
+    function feet2unit(feet) {
+        var unit = feet * model_length / tube_length;
+        return unit;
+    }
+
     // Create panel with buttons for each defects in scrollview
     var panel = new BABYLON.GUI.StackPanel();
     // panel.width = "200px";
@@ -872,21 +1165,27 @@ var delayCreateScene = function () {
     // scrollview.background = "white";
     scrollview.alpha = 0.8;
     scrollview.cornerRadius = 20;
-    scrollview.color = "gray";
+    scrollview.color = "black";
+    scrollview.paddingTop = "5px";
+    scrollview.paddingRight = "10px";
     scrollview.addControl(panel);
 
     var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
     textADT.addControl(scrollview);
 
-    for (var i = 0; i < Object.keys(defects).length; i++) {
-        var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defects[i].name);
-        button.width = "180px";
+    // Create panel with buttons for each defects in scrollview
+    for (let i = 0; i < Object.keys(defects_standart).length; i++) {
+        let defect = defects_standart[i];
+        // var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defect.code + '; ' + defect.remark.slice(0, 20));
+        var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defect.code);
+        button.width = "230px";
         button.height = "40px";
         button.color = "black";
         button.cornerRadius = 20;
-        button.background = defects[i].color;
+        button.background = defect.color;
         // button.alpha = 1.0;
-        let position = defects[i].position;
+        button.fontFamily = "Arial";
+        let position = feet2unit(parseFloat(defect.distance));
         button.onPointerClickObservable.add(function() {
             console.log("clicked");
             // TODO: make separate function for change of camera position
@@ -898,6 +1197,30 @@ var delayCreateScene = function () {
         });
         panel.addControl(button);
     }
+
+    // for (var i = 0; i < Object.keys(defects).length; i++) {
+    //     var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defects[i].name);
+    //     button.width = "180px";
+    //     button.height = "40px";
+    //     button.color = "black";
+    //     button.cornerRadius = 20;
+    //     button.background = defects[i].color;
+    //     // button.alpha = 1.0;
+    //     let position = defects[i].position;
+    //     button.onPointerClickObservable.add(function() {
+    //         console.log("clicked");
+    //         // TODO: make separate function for change of camera position
+    //         redSphere.position.z = position;
+    //         redSphere.position.z = Math.max(0, redSphere.position.z);
+    //         redSphere.position.z = Math.min(max_length, redSphere.position.z);
+
+    //         updateDistanceText(redSphere.position.z);
+    //     });
+    //     panel.addControl(button);
+    // }
+
+    
+    
     
     return scene;
 };
