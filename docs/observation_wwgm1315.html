@@ -464,7 +464,7 @@ var delayCreateScene = function () {
     mainbox.cornerRadius = 4;
     mainbox.color = "gray";
     mainbox.thickness = 0;
-    mainbox.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    mainbox.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
     // mainbox.background = "#221100";
     adt.addControl(mainbox);
     mainbox.isVisible = false;
@@ -517,8 +517,8 @@ var delayCreateScene = function () {
         return function(bjsEvent) {
                 console.log(bjsEvent);
                 mainbox.isVisible = true;
-                mainbox.linkWithMesh(bjsEvent.meshUnderPointer);
-                mainbox.linkOffsetY = -80;
+                // mainbox.linkWithMesh(bjsEvent.meshUnderPointer);
+                // mainbox.linkOffsetY = -80;
                 // headertext.text = mainbox.linkedMesh.name + " menu"
                 images[i].isVisible = true;
             }
