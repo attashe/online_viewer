@@ -874,7 +874,8 @@ var delayCreateScene = function () {
     button.onPointerClickObservable.add(function() {
         console.log("clicked");
         // window.location.href = "index.html";
-        window.open("/router/", "_self");
+        // window.open("/router/", "_self");
+        window.history.back();
     });
     panel_back.addControl(button);
 
