@@ -31,7 +31,7 @@
                 padding: 0;
             }
 
-            #renderCanvas {
+            #renderCanvas { 
                 width: 100%;
                 height: 100%;
                 touch-action: none;
@@ -45,7 +45,7 @@
 var tubeRadius = 1.0;
 var tubeLength = 337.8;
 var tubeModelLength = 55;
-var defects_cnt = 10;
+var defects_cnt = 25;
 
 </script>
 <script>
@@ -458,7 +458,7 @@ var delayCreateScene = function () {
     var adt = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("interface", true)
 
     var mainbox = new BABYLON.GUI.Rectangle();
-    mainbox.height = "600px";  // 20%
+    mainbox.height = "620px";  // 20%
     mainbox.width = "800px";
     mainbox.paddingRight = "2px";
     mainbox.cornerRadius = 4;
@@ -482,7 +482,7 @@ var delayCreateScene = function () {
     header.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
 
     var contentrect = new BABYLON.GUI.Rectangle();
-    contentrect.height = "80%";
+    contentrect.height = "95%";
     contentrect.width = "100%";
     // contentrect.top = "7%";
     // contentrect.left = "0%";
@@ -703,7 +703,7 @@ var delayCreateScene = function () {
     // startLabel.material.diffuseTexture.hasAlpha = true;
     startLabel.material.backFaceCulling = false;
 
-    var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(startLabel, 256, 256);
+    var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(startLabel, 256, 312);
     // console.log(textADT);
     textADT.level = 1.3;
     
@@ -728,7 +728,7 @@ var delayCreateScene = function () {
     // startLabel.material.diffuseTexture.hasAlpha = true;
     startLabel.material.backFaceCulling = false;
 
-    var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(startLabel, 256, 256);
+    var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(startLabel, 256, 312);
     // console.log(textADT);
     textADT.level = 1.3;
     
@@ -744,45 +744,12 @@ var delayCreateScene = function () {
     text1.textWrapping = true;
     textADT.addControl(text1);
 
-    defects = {
-        0: { "name": "stones", rank: 2, "color": "yellow", position: 5 },
-        1: { "name": "cracks", rank: 1, "color": "red", position: 15 },
-        2: { "name": "mud", rank: 2, "color": "yellow", position: 20 },
-        3: { "name": "mud", rank: 2, "color": "yellow", position: 25 },
-        4: { "name": "clay", rank: 2, "color": "yellow", position: 30 },
-        5: { "name": "unknown", rank: 1, "color": "red", position: 35 },
-        // 2: { "name": "holes", rank: 3, "color": "orange" },
-        
-    };
+    
 
-    observations = { "observations": [
-        { "Distance": 0.0, "Dir.": "D", "Length": "", "From/To": "/", "Code": "AMH"},
-        { "Distance": 0.0, "Dir.": "D", "Length": "", "From/To": "/", "Code": "MWL"},
-        { "Distance": 30.0, "Dir.": "D", "Length": "", "From/To": "/", "Code": "MWL"},
-        { "Distance": 48.8, "Dir.": "D", "Length": "", "From/To": "3/", "Code": "TFA"},
-        { "Distance": 68.8, "Dir.": "D", "Length": "", "From/To": "9/", "Code": "TFA"},
-        { "Distance": 94.9, "Dir.": "D", "Length": "", "From/To": "3/", "Code": "TFA"},
-        { "Distance": 203.6, "Dir.": "D", "Length": "", "From/To": "9/", "Code": "TFA"},
-        { "Distance": 235.2, "Dir.": "D", "Length": "", "From/To": "3/", "Code": "TFA"},
-        { "Distance": 238.2, "Dir.": "D", "Length": "", "From/To": "9/", "Code": "TFA"},
-        { "Distance": 337.8, "Dir.": "D", "Length": "", "From/To": "/", "Code": "AMH"},
-    ]};
-
-    defects_standart = {
-        0: { "distance": 0.0, "Dir.": "D", "Length": "", "From/To": "/", "code": "AMH", color: "blue", "remark": ""},
-        1: { "distance": 0.0, "Dir.": "D", "Length": "", "From/To": "/", "code": "MWL", color: "blue", "remark": ""},
-        2: { "distance": 30.0, "Dir.": "D", "Length": "", "From/To": "/", "code": "MWL", color: "yellow", "remark": ""},
-        3: { "distance": 48.8, "Dir.": "D", "Length": "", "From/To": "3/", "code": "TFA", color: "cyan", "remark": ""},
-        4: { "distance": 68.8, "Dir.": "D", "Length": "", "From/To": "9/", "code": "TFA", color: "cyan", "remark": ""},
-        5: { "distance": 94.9, "Dir.": "D", "Length": "", "From/To": "3/", "code": "TFA", color: "cyan", "remark": ""},
-        6: { "distance": 203.6, "Dir.": "D", "Length": "", "From/To": "9/", "code": "TFA", color: "cyan", "remark": ""},
-        7: { "distance": 235.2, "Dir.": "D", "Length": "", "From/To": "3/", "code": "TFA", color: "cyan", "remark": ""},
-        8: { "distance": 238.2, "Dir.": "D", "Length": "", "From/To": "9/", "code": "TFA", color: "cyan", "remark": ""},
-        9: { "distance": 337.8, "Dir.": "D", "Length": "", "From/To": "/", "code": "AMH", color: "blue", "remark": ""},
-    };
-
-    model_length = 55
-    tube_length = 337.8;
+    defects_standart = {"0": {"distance": 0.0, "Dir.": "D", "From/To": "/", "code": "AMH", "color": [232, 221, 167], "remark": ""}, "1": {"distance": 0.0, "Dir.": "D", "From/To": "/", "code": "MWL", "color": [174, 190, 173], "remark": ""}, "2": {"distance": 30.0, "Dir.": "D", "From/To": "/", "code": "MWL", "color": [174, 190, 173], "remark": ""}, "3": {"distance": 48.8, "Dir.": "D", "From/To": "3/", "code": "TFA", "color": [208, 200, 199], "remark": ""}, "4": {"distance": 68.8, "Dir.": "D", "From/To": "9/", "code": "TFA", "color": [208, 200, 199], "remark": ""}, "5": {"distance": 94.9, "Dir.": "D", "From/To": "3/", "code": "TFA", "color": [208, 200, 199], "remark": ""}, "6": {"distance": 203.6, "Dir.": "D", "From/To": "9/", "code": "TFA", "color": [208, 200, 199], "remark": ""}, "7": {"distance": 235.2, "Dir.": "D", "From/To": "3/", "code": "TFA", "color": [208, 200, 199], "remark": ""}, "8": {"distance": 238.2, "Dir.": "D", "From/To": "9/", "code": "TFA", "color": [208, 200, 199], "remark": ""}, "9": {"distance": 337.8, "Dir.": "D", "From/To": "/", "code": "AMH", "color": [232, 221, 167], "remark": ""}}
+    
+    model_length =  tubeModelLength;
+    tube_length = tubeLength;
 
     function unit2feeet(unit) {
         var feet = unit * tube_length / model_length;
@@ -829,12 +796,13 @@ var delayCreateScene = function () {
     for (let i = 0; i < Object.keys(defects_standart).length; i++) {
         let defect = defects_standart[i];
         // var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defect.code + '; ' + defect.remark.slice(0, 20));
-        var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defect.code);
+        var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defect.code + ', ' + defect.distance + 'ft');
         button.width = "230px";
         button.height = "40px";
         button.color = "black";
         button.cornerRadius = 20;
-        button.background = defect.color;
+        button.background = "rgb(" + defect.color[0] + ", " + defect.color[1] + ", " + defect.color[2] + ")";
+         // defect.color; new BABYLON.Color3(0.6,0.6,0.6)
         // button.alpha = 1.0;
         button.fontFamily = "Arial";
         let position = feet2unit(parseFloat(defect.distance));
@@ -849,7 +817,41 @@ var delayCreateScene = function () {
         });
         panel.addControl(button);
     }
+
+    var panel_back = new BABYLON.GUI.StackPanel();
+    // panel.width = "200px";
+    panel_back.fontSize = "14px";
+    panel_back.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    panel_back.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+    // panel.top = "10px";
+    // panel.left = "10px";
+    panel_back.isVertical = true;
+    // panel.background = "white";
+    // panel.alpha = 0.5;
+    // panel_back.cornerRadius = 20;
+    // panel_back.paddingTop = "5px";
+    // panel_back.paddingRight = "10px";
+    textADT.addControl(panel_back);
     
+    // var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defect.code + '; ' + defect.remark.slice(0, 20));
+    var button = BABYLON.GUI.Button.CreateSimpleButton('back_button', 'Back');
+    button.width = "230px";
+    button.height = "45px";
+    button.color = "black";
+    button.cornerRadius = 20;
+    button.background = 'white';
+    button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    button.paddingRight = "10px";
+    button.paddingBottom = "5px";
+    // button.alpha = 1.0;
+    button.fontFamily = "Arial";
+    button.onPointerClickObservable.add(function() {
+        console.log("clicked");
+        // window.location.href = "index.html";
+        window.open("/router/", "_self");
+    });
+    panel_back.addControl(button);
+
     return scene;
 };
         window.initFunction = async function() {
@@ -877,4 +879,4 @@ window.addEventListener("resize", function () {
 });
 </script>
 </body>
-</html>
+</html>  
