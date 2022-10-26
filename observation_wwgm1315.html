@@ -849,6 +849,40 @@ var delayCreateScene = function () {
         });
         panel.addControl(button);
     }
+	
+    var panel_back = new BABYLON.GUI.StackPanel();
+    // panel.width = "200px";
+    panel_back.fontSize = "14px";
+    panel_back.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    panel_back.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+    // panel.top = "10px";
+    // panel.left = "10px";
+    panel_back.isVertical = true;
+    // panel.background = "white";
+    // panel.alpha = 0.5;
+    // panel_back.cornerRadius = 20;
+    // panel_back.paddingTop = "5px";
+    // panel_back.paddingRight = "10px";
+    textADT.addControl(panel_back);
+    
+    // var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defect.code + '; ' + defect.remark.slice(0, 20));
+    var button = BABYLON.GUI.Button.CreateSimpleButton('back_button', 'Back');
+    button.width = "230px";
+    button.height = "45px";
+    button.color = "black";
+    button.cornerRadius = 20;
+    button.background = 'white';
+    button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    button.paddingRight = "10px";
+    button.paddingBottom = "5px";
+    // button.alpha = 1.0;
+    button.fontFamily = "Arial";
+    button.onPointerClickObservable.add(function() {
+        console.log("clicked");
+        // window.location.href = "index.html";
+        window.open("https://attashe.github.io/online_viewer/router.html", "_self");
+    });
+    panel_back.addControl(button);
     
     return scene;
 };
