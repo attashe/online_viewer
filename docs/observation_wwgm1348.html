@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta charset=utf-8>
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://preview.babylonjs.com/ammo.js"></script>
+        <script src="https://preview.babylonjs.com/cannon.js"></script>
+        <script src="https://preview.babylonjs.com/Oimo.js"></script>
+        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas { 
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+<script>
+// TUBE PARAMETERS
+var tubeRadius = 1.0;
+var tubeLength = 239.3;
+var tubeModelLength = 55;
+var defects_cnt = 25;
+
+</script>
+<script>
+var ScatterPlot = function (dimensions, labels, scene) {
+	
+    this.scene = scene;
+	this.dimensions = {width:100, height:100, depth:100};
+
+    if (dimensions.length>0){
+        if(dimensions[0] != undefined) 
+            this.dimensions.width = parseFloat(dimensions[0]);
+        if(dimensions[1] != undefined) 
+            this.dimensions.height = parseFloat(dimensions[1]);
+        if(dimensions[2] != undefined) 
+            this.dimensions.depth = parseFloat(dimensions[2]);
+    }
+    
+    this.labelsInfo = {x:[""], y:[""], z:[""]};
+
+    if(Object.keys(labels).length>0){
+        if(labels.x != undefined && Array.isArray(labels.x))
+            this.labelsInfo.x = labels.x;
+        if(labels.y != undefined && Array.isArray(labels.y))
+            this.labelsInfo.y = labels.y;
+        if(labels.z != undefined && Array.isArray(labels.z))
+            this.labelsInfo.z = labels.z;
+    }
+
+    this.axis = [];
+
+    //infos for dispose;
+	this._materials = [];
+    this._meshes = [];
+    this._textures = [];
+
+    //the figure
+    this.shape = null;
+
+    //the entire scatterPlot
+    this.mesh = new BABYLON.Mesh("scatterPlot", this.scene);
+	
+    //internals
+	this._depth = this.dimensions.depth, 
+	this._width = this.dimensions.width,
+	this._height = this.dimensions.height, 
+	this._a = this.labelsInfo.y.length,
+	this._b = this.labelsInfo.x.length,
+	this._c = this.labelsInfo.z.length;
+    this._color = new BABYLON.Color3(0.6,0.6,0.6);
+	this._defPos = this.mesh.position.clone();
+
+    this._addGrid = function (width, height, linesHeight, linesWidth, position, rotation) {
+		let [width_start, width_end] = width;
+        let [height_start, height_end] = height;
+
+        console.log("width from " + width_start + " to " + width_end);
+        console.log("height from " + height_start + " to " + height_end);
+        height = height_end - height_start;
+        width = width_end - width_start;
+
+        var stepw = width/linesWidth,
+        steph = height/linesHeight;
+        var verts = [];
+
+        //width
+        for ( var i = width_start; i <= width_end; i += stepw ) {
+            verts.push([new BABYLON.Vector3( height_start, i,0 ), new BABYLON.Vector3( height_end, i,0 )]);
+        }
+        
+        //height
+        for ( var i = height_start; i <= height_end; i += steph ) {
+            verts.push([new BABYLON.Vector3( i,width_start,0 ), new BABYLON.Vector3( i, width_end, 0 )]);
+        }
+
+        this._BBJSaddGrid(verts, position, rotation);   
+	};
+
+    this._BBJSaddGrid = function (verts, position, rotation){
+
+        var line = BABYLON.MeshBuilder.CreateLineSystem("linesystem", {lines: verts, updatable: false}, this.scene); 
+        line.color = this._color;
+        
+        line.position = position;
+        line.rotation = rotation;
+	    line.parent = this.mesh;
+        this.axis.push(line);
+        this._meshes.push(line);
+    };
+
+    this._addLabel = function (length, data, axis, position) { 
+        // let length_start, length_end = length;
+        // length = length_end;
+        let [start, end] = length;
+
+        var diff = (end - start)/data.length,
+        p = new BABYLON.Vector3.Zero(),
+        parent = new BABYLON.Mesh("label_"+axis, this.scene);
+
+        for ( var i = 0; i < data.length; i ++ ) {
+            var label = this._BBJSaddLabel(data[i]);
+            label.position = p.clone();
+
+            switch(axis.toLowerCase()){
+                case "x":
+                    p.subtractInPlace(new BABYLON.Vector3(diff,0,0));
+                    break;
+                case "y":
+                    p.addInPlace(new BABYLON.Vector3(0, diff, 0));
+                    break;
+                case "z":
+                    p.subtractInPlace(new BABYLON.Vector3(0,0,diff));
+                    break;
+            }
+            label.parent =  parent;
+        }
+        parent.position = position;
+        parent.parent = this.mesh;
+        this._meshes.push(parent);
+    };
+
+    this._BBJSaddLabel = function(text){
+
+        const planeTexture = new BABYLON.DynamicTexture("dynamic texture", 256, this.scene, true, BABYLON.DynamicTexture.TRILINEAR_SAMPLINGMODE);
+        planeTexture.drawText(text, null, null, "normal 42pt Helvetica", "black", "transparent", true);
+
+        var material = new BABYLON.StandardMaterial("outputplane", this.scene);
+        material.emissiveTexture = planeTexture;
+        material.opacityTexture = planeTexture;
+        material.backFaceCulling = true;
+        material.disableLighting = true;
+        material.freeze();
+        
+        var outputplane = BABYLON.Mesh.CreatePlane("outputplane", 1, this.scene, false);
+        outputplane.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+        outputplane.material = material;
+
+        this._meshes.push(outputplane);
+        this._materials.push(material);
+        this._textures.push(planeTexture);
+
+        return outputplane;           
+    };
+    
+    this.setColor = function (color3){
+        if(this.axis.length>0){
+            for(var i=0;i<this.axis.length;i++){
+                this.axis[i].color = color3;
+            }    
+        }
+    };
+
+    this.setPosition = function (vector3){
+        if(this.mesh){
+            this.mesh.position = vector3;
+        }
+    };
+
+    this.setScaling = function (vector3){
+        if(this.mesh){
+            this.mesh.scaling = vector3;
+        }
+    };
+
+    this.draw = function (vector3_array, use_objects = false, gridMaterial = false, convertToFlatShadedMesh = false){
+        var points = [];
+        if(vector3_array.length > 0){
+            for(var i=0;i<vector3_array.length;i++){
+                points.push(new BABYLON.Vector3(
+                    vector3_array[i].x*(this.dimensions.width/this._b),
+                    vector3_array[i].y*(this.dimensions.height/this._a),
+                    vector3_array[i].z*(this.dimensions.depth/this._c)
+                ));       
+            }
+        }
+        
+        if(points.length>0){
+			this._defPos = this.mesh.position.clone();
+			this.mesh.position = new BABYLON.Vector3(this._width,this._height,this._depth);
+			
+            if(use_objects){
+                var sphere = BABYLON.Mesh.CreateSphere("sphere", 16, 1, this.scene); 
+                var SPS = new BABYLON.SolidParticleSystem('SPS', this.scene);
+                SPS.addShape(sphere, points.length);
+                SPS.buildMesh();
+                sphere.dispose(); 
+               
+                SPS.initParticles = function(points,altitude) {
+                    var p = 0;
+                    for(var i=0;i<points.length;i++){
+                        
+                        SPS.particles[p].position.x = points[i].x;
+                        SPS.particles[p].position.y = points[i].y;
+                        SPS.particles[p].position.z = points[i].z;
+
+                        SPS.particles[p].scale.x = vector3_array[i].y/1.5;
+                        SPS.particles[p].scale.y = vector3_array[i].y/1.5;
+                        SPS.particles[p].scale.z = vector3_array[i].y/1.5;
+                       
+                        SPS.particles[p].color.r = 1.0;
+                        SPS.particles[p].color.g = 1-vector3_array[i].y/altitude;
+                        SPS.particles[p].color.b = 0.5;
+                        SPS.particles[p].color.a = 1.0;
+                        p++;
+                    }
+                };
+
+                // init all particle values and set them once to apply textures, colors, etc
+                SPS.initParticles(points, this._a);
+                SPS.setParticles();            
+                SPS.isAlwaysVisible = true;
+                SPS.computeParticleRotation = false;
+                SPS.computeParticleColor = false;
+                SPS.computeParticleTexture = false;
+                SPS.mesh.position.subtractInPlace(this.mesh.position);
+                SPS.mesh.parent = this.mesh;
+                this._meshes.push(SPS);
+                this.shape = SPS;
+            }
+            else
+            {
+                if(gridMaterial){
+					var mat = new BABYLON.GridMaterial("grid", this.scene);	
+                    mat.gridRatio = 2;
+                    mat.majorUnitFrequency = 1;
+                    mat.minorUnitVisibility = 0.1;
+                    mat.opacity = 0.98;
+                    mat.mainColor = new BABYLON.Color3(1, 1, 1);
+	                mat.lineColor = new BABYLON.Color3(0,0,0);  
+                }else{
+                    var mat = new BABYLON.StandardMaterial("standard", this._scene);
+                    mat.specularColor = new BABYLON.Color3();        
+                }
+
+                mat.backFaceCulling = false;
+				
+                var points_chunk = this._chunk(points, this._c-1);                
+                
+                var ribbon = BABYLON.Mesh.CreateRibbon("ribbon", points_chunk, false, false, 0,  this.scene, true, BABYLON.Mesh.BACKSIDE);
+                ribbon.material = mat;  
+
+                var vertexData = new BABYLON.VertexData(); 
+                var pdata = ribbon.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                
+                var faceColors=[];
+                for(var i=0;i<pdata.length;i+=3)
+                {
+                    var coef = (1-pdata[i+1]/this._a/8);
+                    faceColors.push(1,coef,0.5,1);
+                }
+                
+                vertexData.colors = faceColors; 
+                vertexData.applyToMesh(ribbon, true);
+                ribbon.useVertexColors = true;
+
+                if(convertToFlatShadedMesh){
+                    ribbon.convertToFlatShadedMesh();       
+                }
+                
+                ribbon.position.subtractInPlace(this.mesh.position);
+                ribbon.parent = this.mesh;
+                this._meshes.push(ribbon);
+                this._materials.push(mat);
+                this.shape = ribbon;
+            }
+			this.mesh.position = this._defPos;
+        }        
+    };
+
+    this._chunk = function (arr, chunkSize) {
+        var R = [];
+        for (var i=0,len=arr.length; i<len; i+=chunkSize)
+            R.push(arr.slice(i,i+chunkSize));
+        return R;
+    };
+
+    this.dispose = function (allmeshes = false){
+        if(this.shape!=null){
+            if(this.shape.material != undefined)
+                this.shape.material.dispose();
+            this.shape.dispose();
+            this.shape = null;
+        }
+        if(allmeshes){
+            if(this._textures.length>0){
+                for(var i=0;i<this._textures.length;i++){
+                    this._textures[i].dispose();
+                }
+            }
+            if(this._materials.length>0){
+                for(var i=0;i<this._materials.length;i++){
+                    this._materials[i].dispose();
+                }
+            }
+            if(this._meshes.length>0){
+                for(var i=0;i<this._meshes.length;i++){
+                    this._meshes[i].dispose();
+                }
+            }
+            if(this.mesh!=null){
+                if(this.mesh.material != null)
+                    this.mesh.material.dispose();
+                this.mesh.dispose();           
+            }
+            this._meshes = [];
+            this._materials = [];
+            this._textures = [];
+            this.mesh = null;
+            delete this;
+        }
+    }
+
+    //create items
+
+    this._addGrid([0, this._depth], [-this._height/2, this._height/2], this._b, this._c, new BABYLON.Vector3(0,0,0), new BABYLON.Vector3(Math.PI/2,0,0));
+    this._addLabel([0, -this._depth], this.labelsInfo.z, "z", BABYLON.Vector3.Zero());
+
+    return this;
+}
+</script>
+<script>
+// var basefolder = "/wwgm1348"
+var basefolder = "assets/wwgm1348";
+var canvas = document.getElementById("renderCanvas");
+
+var startRenderLoop = function (engine, canvas) {
+    engine.runRenderLoop(function () {
+        if (sceneToRender && sceneToRender.activeCamera) {
+            sceneToRender.render();
+        }
+    });
+}
+
+var engine = null;
+var scene = null;
+var sceneToRender = null;
+var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+var delayCreateScene = function () {
+    // Create a scene.
+    var scene = new BABYLON.Scene(engine);
+
+    // Create a default arc rotate camera and light.
+    scene.createDefaultCameraOrLight(true, true, true);
+
+    // Add 3D-Grid to scene
+    let W = 10, H = 10, D = tubeModelLength;
+
+    init_zs = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100'];
+
+    start_z = 0;
+    end_z = tubeLength;
+
+    rescale_zs = [];
+    last_z = 105;
+    for (var i = 0; i < init_zs.length; i++) {
+        rescale_zs.push((parseFloat(init_zs[i]) / last_z * (end_z - start_z) + start_z).toFixed(1));
+    }
+
+    scatterPlot = new ScatterPlot([W,H,D],{
+        x: [2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006],
+        y: ["", "25°", "26°", "27°", "28°", "29°", "30°", "31°", "32°", "33°", "34°", "35°", "36°", "37°", "38°", "39°", "40°"],
+        z: rescale_zs,  
+    }, scene);
+
+    scene.clearColor = new BABYLON.Color3(120/255, 120/255, 165/255);
+    // scene.ambientColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+
+    // Create a default skybox with an environment.
+    // var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("textures/environment.dds", scene);
+    // var currentSkybox = scene.createDefaultSkybox(hdrTexture, true);
+
+    // ----------- Create a text panel with information about the scene ------------
+    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+    var text1 = new BABYLON.GUI.TextBlock();
+    text1.text = "City Of Newberg, OR\n1000E 4TH ST\nMaterial: PVC\n8\" wwgm1348\nStart 2/1/2021 1:44 PM\nEnd 2/1/2021 2:09 PM\n";
+    text1.color = "white";
+    text1.paddingTop = "5px";
+    text1.paddingLeft = "10px";
+    text1.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    text1.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    text1.fontSize = 24;
+    text1.fontFamily = "Montserrat";
+    advancedTexture.addControl(text1);  
+
+    // ----------- Create a text panel with distance ------------
+    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+    var text2 = new BABYLON.GUI.TextBlock();
+    var text_prefix = "Distance: ";
+    var text_suffix = " ft";
+    text2.text = text_prefix + "0.00" + text_suffix;
+    text2.color = "white";
+    text2.paddingBottom = "5px";
+    text2.paddingLeft = "10px";
+    text2.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    text2.textVerticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+    text2.fontSize = 24;
+    text2.fontFamily = "Montserrat";
+    advancedTexture.addControl(text2);  
+
+    function updateDistanceText(distance) {
+        // rescale distance
+        distance = distance / D * (end_z - start_z) + start_z;
+        text2.text = text_prefix + distance.toFixed(2) + text_suffix;
+    }
+
+    // ----------- Create a control panel -----------
+    // Activate full-screen 2d GUI  
+
+    var adt = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("interface", true)
+
+    var mainbox = new BABYLON.GUI.Rectangle();
+    mainbox.height = "620px";  // 20%
+    mainbox.width = "800px";
+    mainbox.paddingRight = "2px";
+    mainbox.cornerRadius = 4;
+    mainbox.color = "gray";
+    mainbox.thickness = 0;
+    mainbox.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    // mainbox.background = "#221100";
+    adt.addControl(mainbox);
+    mainbox.isVisible = false;
+    // console.log(mainbox);
+
+    var header = new BABYLON.GUI.Rectangle();
+    header.height = "20px";
+    header.width = "96%";
+    // header.top = "-43%";
+    header.left = "0%";
+    header.cornerRadius = 4;
+    header.color = "gray";
+    header.thickness = 1;
+    header.background = "#221100";
+    header.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+
+    var contentrect = new BABYLON.GUI.Rectangle();
+    contentrect.height = "95%";
+    contentrect.width = "100%";
+    // contentrect.top = "7%";
+    // contentrect.left = "0%";
+    contentrect.cornerRadius = 4;
+    contentrect.color = "gray";
+    contentrect.thickness = 1;
+    // footer.background = "#221100";
+    mainbox.addControl(contentrect);
+    contentrect.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+
+    var contentpanel = new BABYLON.GUI.StackPanel("contentpanel");
+    contentpanel.isVertical = true;
+    contentrect.addControl(contentpanel);
+
+    var images = [];
+
+    for (let i=0;i<defects_cnt;i++) {
+        images[i] = new BABYLON.GUI.Image("image"+i, basefolder + "/images/frame_"+ (i+1) +".png");
+        images[i].width = "800px";
+        images[i].height = "600px";
+        images[i].stretch = BABYLON.GUI.Image.STRETCH_UNIFORM;
+        images[i].verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        images[i].horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        images[i].isVisible = false;
+        contentpanel.addControl(images[i]);
+    }
+
+// -----------------------------------------------------------------------------
+    //  action manager area
+
+    function getOverFunc(i) {
+        return function(bjsEvent) {
+                console.log(bjsEvent);
+                mainbox.isVisible = true;
+                // mainbox.linkWithMesh(bjsEvent.meshUnderPointer);
+                // mainbox.linkOffsetY = -80;
+                // headertext.text = mainbox.linkedMesh.name + " menu"
+                images[i].isVisible = true;
+            }
+    }
+
+    function getExitFunc(i) {
+        return function(bjsEvent) {
+                console.log(bjsEvent);
+                mainbox.isVisible = false;
+                mainbox.linkWithMesh(null);
+                images[i].isVisible = false;
+            }
+    }
+
+	var prepareOverOut = function (mesh, func_over, func_out) {
+    
+        mesh.actionManager = new BABYLON.ActionManager(scene);
+    	
+        mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                BABYLON.ActionManager.OnPointerOverTrigger, func_over
+            )
+        );
+		
+        mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                BABYLON.ActionManager.OnPointerOutTrigger, func_out
+            )
+        );
+    }
+
+    // Append glTF model to scene.
+    var loader = BABYLON.SceneLoader.ImportMesh("", basefolder + "/models/tube/", "tube_final.obj", scene, function (meshes) {
+
+        // The default camera looks at the back of the asset.
+        // Rotate the camera by 180 degrees to the front of the asset.
+        scene.activeCamera.alpha += Math.PI;
+        // scene.activeCamera.target = meshes[0]
+
+        // prepareOverOut(meshes[0]);
+    });
+
+    for(let i=0; i < defects_cnt; i++) {
+        var loader = BABYLON.SceneLoader.ImportMesh(
+            "", basefolder + "/models/defects/", "test_" + i + ".obj", scene, 
+            function (meshes) {
+                prepareOverOut(meshes[0], getOverFunc(i), getExitFunc(i));
+        });
+    }
+
+    var startingPoint;
+    var currentMesh;
+
+    var getGroundPosition = function () {
+        var pickinfo = scene.pick(scene.pointerX, scene.pointerY, function (mesh) { return mesh == ground; });
+        if (pickinfo.hit) {
+            return pickinfo.pickedPoint;
+        }
+
+        return null;
+    }
+
+    var pointerDown = function (mesh) {
+            currentMesh = mesh;
+            startingPoint = getGroundPosition();
+            if (startingPoint) { // we need to disconnect camera from canvas
+                setTimeout(function () {
+                    scene.activeCamera.detachControl(canvas);
+                }, 0);
+            }
+    }
+
+    var pointerUp = function () {
+        if (startingPoint) {
+            scene.activeCamera.attachControl(canvas, true);
+            startingPoint = null;
+            return;
+        }
+    }
+
+    var pointerMove = function () {
+        if (!startingPoint) {
+            return;
+        }
+        var current = getGroundPosition();
+        if (!current) {
+            return;
+        }
+
+        var diff = current.subtract(startingPoint);
+        currentMesh.position.addInPlace(diff);
+
+        startingPoint = current;
+
+    }
+
+    //Materials
+    var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+    groundMaterial.specularColor = BABYLON.Color3.Black();
+
+    // Ground
+    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width:1, height:1000}, scene, false);
+    ground.material = groundMaterial;
+    ground.isVisible = false;
+
+    var redMat = new BABYLON.StandardMaterial("ground", scene);
+    redMat.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+    redMat.specularColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+    redMat.emissiveColor = BABYLON.Color3.Red();
+
+    // Meshes
+    var redSphere = BABYLON.MeshBuilder.CreateSphere("red", {diameter:0.2}, scene);
+    redSphere.material = redMat;
+    redSphere.position.y = 0;
+    redSphere.position.x = 0;
+
+    // Add a axis to the scene.
+    const axes = new BABYLON.AxesViewer(scene, 0.6);
+    axes.xAxis.parent = redSphere;
+    axes.yAxis.parent = redSphere;
+    axes.zAxis.parent = redSphere;
+
+    scene.activeCamera.target = redSphere;
+
+    var prevPos = new BABYLON.Vector2(0, 0);
+    scale = 0.001;
+    scene.onPointerObservable.add((pointerInfo) => {
+        // console.log(scene.activeCamera.getDirection(BABYLON.Axis.Z));
+        direction = scene.activeCamera.getDirection(BABYLON.Axis.Z);
+        if (pointerInfo.event.button == 0) {
+            return scene;
+        }
+        pos_x = pointerInfo.event.clientX;
+        pos_y = pointerInfo.event.clientY;
+        switch (pointerInfo.type) {
+            case BABYLON.PointerEventTypes.POINTERDOWN:
+                console.log("POINTER DOWN");
+                console.log(pointerInfo);
+                prevPos.x = pos_x;
+                prevPos.y = pos_y;
+                break;
+            case BABYLON.PointerEventTypes.POINTERUP:
+                console.log("POINTER UP");
+                prevPos.x = 0;
+                prevPos.y = 0;
+                break;
+            case BABYLON.PointerEventTypes.POINTERMOVE:
+                console.log("POINTER MOVE");
+                if (prevPos.x != 0 && prevPos.y != 0) {
+                    // diff = pos - prevPos;
+                    diff_x = pos_x - prevPos.x;
+                    diff_y = pos_y - prevPos.y;
+                    // TODO: make separate function for change of camera position
+                    redSphere.position.z += scale * (diff_x * direction.x + diff_y * direction.z);
+                    redSphere.position.z = Math.max(0, redSphere.position.z);
+                    redSphere.position.z = Math.min(tubeModelLength, redSphere.position.z);
+
+                    updateDistanceText(redSphere.position.z);
+                }
+                break;
+            case BABYLON.PointerEventTypes.POINTERWHEEL:
+                console.log("POINTER WHEEL");
+                break;
+            case BABYLON.PointerEventTypes.POINTERPICK:
+                console.log("POINTER PICK");
+                break;
+            case BABYLON.PointerEventTypes.POINTERTAP:
+                console.log("POINTER TAP");
+                break;
+            case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
+                console.log("POINTER DOUBLE-TAP");
+                break;
+            }
+        });
+
+    // Add text labels to the start and end of the tube.
+    var startLabel = BABYLON.MeshBuilder.CreatePlane("startLabel", {width: 3, height: 3}, scene);
+    startLabel.position = new BABYLON.Vector3(0, 2, 0);
+    startLabel.rotation = new BABYLON.Vector3(0, -3.14 / 2, 0);
+    startLabel.material = new BABYLON.StandardMaterial("startLabel", scene);
+    // startLabel.material.diffuseTexture = new BABYLON.Texture(basefolder + "/images/start.png", scene);
+    // startLabel.material.diffuseTexture.hasAlpha = true;
+    startLabel.material.backFaceCulling = false;
+
+    var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(startLabel, 256, 312);
+    // console.log(textADT);
+    textADT.level = 1.3;
+    
+    // textADT.getAlphaFromRGB = true;
+    var text1 = new BABYLON.GUI.TextBlock("hi text");
+    text1.text = "wwmG126127"
+    text1.width = 1;
+    text1.height = 1;
+    text1.color = "black";
+    text1.fontSize = 44;
+    // text1.fontWeight = "bold";
+    text1.fontFamily = "Montserrat";
+    text1.textWrapping = true;
+    textADT.addControl(text1);
+
+    // Add text labels to the start and end of the tube.
+    var startLabel = BABYLON.MeshBuilder.CreatePlane("startLabel", {width: 3, height: 3}, scene);
+    startLabel.position = new BABYLON.Vector3(0, 2, tubeModelLength);
+    startLabel.rotation = new BABYLON.Vector3(0, -3.14 / 2, 0);
+    startLabel.material = new BABYLON.StandardMaterial("startLabel", scene);
+    // startLabel.material.diffuseTexture = new BABYLON.Texture(basefolder + "/images/start.png", scene);
+    // startLabel.material.diffuseTexture.hasAlpha = true;
+    startLabel.material.backFaceCulling = false;
+
+    var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(startLabel, 256, 312);
+    // console.log(textADT);
+    textADT.level = 1.3;
+    
+    // textADT.getAlphaFromRGB = true;
+    var text1 = new BABYLON.GUI.TextBlock("hi text");
+    text1.text = "wwmG126126"
+    text1.width = 1;
+    text1.height = 1;
+    text1.color = "black";
+    text1.fontSize = 44;
+    // text1.fontWeight = "bold";
+    text1.fontFamily = "Montserrat";
+    text1.textWrapping = true;
+    textADT.addControl(text1);
+
+    
+
+    defects_standart = {
+        0: {"distance": 0.0, "Dir.": "D", "From/To": "/", "code": "AMH", "color": [232, 221, 167], "remark": ""}, 
+        1: {"distance": 0.0, "Dir.": "D", "From/To": "/", "code": "MWL", "color": [232, 221, 167], "remark": ""}, 
+        2: {"distance": 2.5, "Dir.": "D", "From/To": "12/12", "code": "CM", "color": [255, 192, 125], "remark": ""}, 
+        3: {"distance": 33.2, "Dir.": "D", "From/To": "3/", "code": "TSA", "color": [208, 200, 199], "remark": ""}, 
+        4: {"distance": 46.0, "Dir.": "D", "From/To": "9/", "code": "TBA", "color": [208, 200, 199], "remark": ""}, 
+        5: {"distance": 46.0, "Dir.": "D", "From/To": "9/", "code": "IR", "color": [237, 125, 49], "remark": ""}, 
+        6: {"distance": 79.3, "Dir.": "D", "From/To": "3/", "code": "TFA", "color": [208, 200, 199], "remark": ""}, 
+        7: {"distance": 81.4, "Dir.": "D", "From/To": "10/", "code": "TFC", "color": [208, 200, 199], "remark": ""},
+        8: {"distance": 122.2, "Dir.": "D", "From/To": "3/", "code": "SSS", "color": [255, 255, 0], "remark": ""}, 
+        9: {"distance": 126.0, "Dir.": "D", "From/To": "9/", "code": "TBA", "color": [208, 200, 199], "remark": ""}, 
+        10: {"distance": 128.4, "Dir.": "D", "From/To": "9/3", "code": "CM", "color": [255, 192, 125], "remark": ""}, 
+        11: {"distance": 133.3, "Dir.": "D", "From/To": "3/", "code": "TFC", "color": [208, 200, 199], "remark": ""}, 
+        12: {"distance": 135.3, "Dir.": "D", "From/To": "9/", "code": "TFC", "color": [208, 200, 199], "remark": ""}, 
+        13: {"distance": 165.9, "Dir.": "D", "From/To": "9/", "code": "TBI", "color": [255, 192, 125], "remark": ""}, 
+        14: {"distance": 167.4, "Dir.": "D", "From/To": "3/", "code": "TFC", "color": [208, 200, 199], "remark": ""}, 
+        15: {"distance": 169.5, "Dir.": "D", "From/To": "9/", "code": "TFC", "color": [208, 200, 199], "remark": ""}, 
+        16: {"distance": 170.6, "Dir.": "D", "From/To": "7/", "code": "IR", "color": [237, 125, 49], "remark": ""},
+        17: {"distance": 186.1, "Dir.": "D", "From/To": "/", "code": "MMC", "color": [174, 190, 173], "remark": ""},
+        18: {"distance": 187.1, "Dir.": "D", "From/To": "2/", "code": "TFA", "color": [208, 200, 199], "remark": ""},
+        19: {"distance": 188.0, "Dir.": "D", "From/To": "/", "code": "MMC", "color": [174, 190, 173], "remark": ""},
+        20: {"distance": 189.2, "Dir.": "D", "From/To": "/", "code": "MWLS", "color": [255, 255, 0], "remark": ""},
+        21: {"distance": 193.5, "Dir.": "D", "From/To": "10/", "code": "TFA", "color": [208, 200, 199], "remark": ""},
+        22: {"distance": 231.2, "Dir.": "D", "From/To": "3/", "code": "TFA", "color": [208, 200, 199], "remark": ""},
+        23: {"distance": 239.3, "Dir.": "D", "From/To": "/", "code": "MWLS", "color": [255, 255, 0], "remark": ""}, 
+        24: {"distance": 239.3, "Dir.": "D", "From/To": "/", "code": "AMH", "color": [232, 221, 167], "remark": ""}
+    }
+
+    model_length =  tubeModelLength;
+    tube_length = tubeLength;
+
+    function unit2feeet(unit) {
+        var feet = unit * tube_length / model_length;
+        return feet;
+    }
+
+    function feet2unit(feet) {
+        var unit = feet * model_length / tube_length;
+        return unit;
+    }
+
+    // Create panel with buttons for each defects in scrollview
+    var panel = new BABYLON.GUI.StackPanel();
+    // panel.width = "200px";
+    panel.fontSize = "14px";
+    panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    // panel.top = "10px";
+    // panel.left = "10px";
+    panel.isVertical = true;
+    // panel.background = "white";
+    // panel.alpha = 0.5;
+    panel.cornerRadius = 20;
+
+    var scrollview = new BABYLON.GUI.ScrollViewer();
+    scrollview.width = "300px";
+    scrollview.height = "500px";
+    scrollview.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    scrollview.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    scrollview.thickness = 3;
+    scrollview.isVertical = true;
+    // scrollview.background = "white";
+    scrollview.alpha = 0.8;
+    scrollview.cornerRadius = 20;
+    scrollview.color = "black";
+    scrollview.paddingTop = "5px";
+    scrollview.paddingRight = "10px";
+    scrollview.addControl(panel);
+
+    var textADT = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    textADT.addControl(scrollview);
+
+    // Create panel with buttons for each defects in scrollview
+    for (let i = 0; i < Object.keys(defects_standart).length; i++) {
+        let defect = defects_standart[i];
+        // var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defect.code + '; ' + defect.remark.slice(0, 20));
+        var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defect.code + ', ' + defect.distance + 'ft');
+        button.width = "230px";
+        button.height = "40px";
+        button.color = "black";
+        button.cornerRadius = 20;
+        button.background = "rgb(" + defect.color[0] + ", " + defect.color[1] + ", " + defect.color[2] + ")";
+         // defect.color; new BABYLON.Color3(0.6,0.6,0.6)
+        // button.alpha = 1.0;
+        button.fontFamily = "Arial";
+        let position = feet2unit(parseFloat(defect.distance));
+        button.onPointerClickObservable.add(function() {
+            console.log("clicked");
+            // TODO: make separate function for change of camera position
+            redSphere.position.z = position;
+            redSphere.position.z = Math.max(0, redSphere.position.z);
+            redSphere.position.z = Math.min(tubeModelLength, redSphere.position.z);
+
+            updateDistanceText(redSphere.position.z);
+        });
+        panel.addControl(button);
+    }
+
+    var panel_back = new BABYLON.GUI.StackPanel();
+    // panel.width = "200px";
+    panel_back.fontSize = "14px";
+    panel_back.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    panel_back.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+    // panel.top = "10px";
+    // panel.left = "10px";
+    panel_back.isVertical = true;
+    // panel.background = "white";
+    // panel.alpha = 0.5;
+    // panel_back.cornerRadius = 20;
+    // panel_back.paddingTop = "5px";
+    // panel_back.paddingRight = "10px";
+    textADT.addControl(panel_back);
+    
+    // var button = BABYLON.GUI.Button.CreateSimpleButton("but" + i, 'No: ' + (i+1) + ', ' + defect.code + '; ' + defect.remark.slice(0, 20));
+    var button = BABYLON.GUI.Button.CreateSimpleButton('back_button', 'Back');
+    button.width = "230px";
+    button.height = "45px";
+    button.color = "black";
+    button.cornerRadius = 20;
+    button.background = 'white';
+    button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    button.paddingRight = "10px";
+    button.paddingBottom = "5px";
+    // button.alpha = 1.0;
+    button.fontFamily = "Arial";
+    button.onPointerClickObservable.add(function() {
+        console.log("clicked");
+        // window.location.href = "index.html";
+        window.open("/router/", "_self");
+    });
+    panel_back.addControl(button);
+
+    return scene;
+};
+        window.initFunction = async function() {
+            
+            
+            var asyncEngineCreation = async function() {
+                try {
+                return createDefaultEngine();
+                } catch(e) {
+                console.log("the available createEngine function failed. Creating the default engine instead");
+                return createDefaultEngine();
+                }
+            }
+
+            window.engine = await asyncEngineCreation();
+if (!engine) throw 'engine should not be null.';
+startRenderLoop(engine, canvas);
+window.scene = delayCreateScene();};
+initFunction().then(() => {sceneToRender = scene                    
+});
+
+// Resize
+window.addEventListener("resize", function () {
+    engine.resize();
+});
+</script>
+</body>
+</html>  
